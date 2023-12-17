@@ -15,3 +15,5 @@ SELECT
 	END AS CountryLocation
 FROM
 	WorldEvents.dbo.tblCountry c
+ORDER BY
+  CountryLocation DESC
