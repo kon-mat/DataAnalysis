@@ -6,7 +6,7 @@ GO
 --	-----[   OBLICZANIE WARTOŒÆI SKUMULOWANYCH   ]-----
 
 
---	1. Tabela ze sprzeda¿¹ w danym miesi¹cu oraz sprzeda¿¹ skumulowan¹ w danym roku
+--	1. Tabela ze sprzeda¿¹ w danym miesi¹cu oraz sprzeda¿¹ skumulowan¹ w danym roku	#!
 SELECT
 	r.sales_month,
 	r.sales,
@@ -60,7 +60,7 @@ WHERE
 --		Book stores	1992-05-01	552.0000000000	1992-04-01	523.0000000000
 
 
---	1. Mo¿emy obliczyæ zmianê procentow¹ wzglêdem poprzedniego miesi¹ca
+--	1. Mo¿emy obliczyæ zmianê procentow¹ wzglêdem poprzedniego miesi¹ca	#!
 SELECT
 	r.kind_of_business,
 	r.sales_month,
@@ -110,7 +110,7 @@ WHERE
 --		1996-01-01	1373.0000000000	1995-01-01	1308.0000000000
 
 
--- 2. Porównanie sprzeda¿y w latach 1992, 1993, 1994 - rozbicie na miesi¹ce w zakresie rocznym
+-- 2. Porównanie sprzeda¿y w latach 1992, 1993, 1994 - rozbicie na miesi¹ce w zakresie rocznym	#!
 SELECT
 	DATEPART(month, r.sales_month) AS [month_number],
 

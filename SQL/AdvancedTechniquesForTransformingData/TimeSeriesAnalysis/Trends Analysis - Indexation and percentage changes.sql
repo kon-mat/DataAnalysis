@@ -142,7 +142,7 @@ ORDER BY
 	r.sales_month
 
 
--- 2. Wykorzystanie funkcji ramki do stworzenia okna (preceding rows / following rows)
+-- 2. Wykorzystanie funkcji ramki do stworzenia okna (preceding rows / following rows)	#!
 SELECT
 	r.sales_month,
 
