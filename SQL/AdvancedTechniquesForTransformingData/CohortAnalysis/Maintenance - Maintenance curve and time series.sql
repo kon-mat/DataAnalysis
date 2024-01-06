@@ -282,3 +282,124 @@ FROM
 --13			12518					2326							0.185812430100655
 --14			12518					1977							0.157932577088992
 --15			12518					1958							0.156414762741652
+
+
+
+--	-----[   ROZBICIE KOHORT NA PODSTAWIE SZEREGÓW CZASÓW (NP. STULECIE)   ]-----
+
+
+--	1. Podzia³ kohort na rok i okres
+-- Tabela z iloœci¹ cz³onków z podzia³em na lata i okresy
+SELECT
+	DATEPART(year, lt2.first_term) AS [first_year],
+	COALESCE(DATEDIFF(year, lt2.first_term, y.year_date), 0) AS [period],
+	COUNT(DISTINCT lt2.id_bioguide) AS [cohort_retained]
+FROM
+	(
+		-- Tabela z id danego polityka i jego dat¹ rozpoczêcia kadencji
+		SELECT
+			lt.id_bioguide,
+			MIN(lt.term_start) AS [first_term]
+		FROM
+			legislators_terms lt
+		GROUP BY
+			lt.id_bioguide
+	) lt2
+
+	INNER JOIN legislators_terms lt3
+		ON lt2.id_bioguide = lt3.id_bioguide
+
+	LEFT JOIN YearlyCalendar y
+		ON y.year_date BETWEEN lt3.term_start AND lt3.term_end
+
+	GROUP BY
+		DATEPART(year, lt2.first_term),
+		COALESCE(DATEDIFF(year, lt2.first_term, y.year_date), 0)
+
+ORDER BY
+		DATEPART(year, lt2.first_term)
+
+
+--	1. Agegracja kohort na podstawie stualecia	#!
+SELECT
+	lt4.first_century,
+	lt4.period,
+
+	-- Pierwa wartoœæ z danego roku (okres = 0)
+	-- Czyli liczba cz³onków z danej kohorty na starcie
+	FIRST_VALUE(lt4.cohort_retained) OVER (
+		PARTITION BY lt4.first_century
+		ORDER BY lt4.period
+	) AS [cohort_size],
+
+	lt4.cohort_retained,
+
+	CAST(lt4.cohort_retained AS float) /
+	FIRST_VALUE(lt4.cohort_retained) OVER (
+		PARTITION BY lt4.first_century
+		ORDER BY lt4.period
+	) AS [pct_retained]
+
+
+FROM
+	(
+		-- Tabela z iloœci¹ cz³onków z podzia³em na stulecia
+		SELECT
+
+			CASE
+			  WHEN DATEPART(year, lt2.first_term) BETWEEN 1701 AND 1800 THEN 18
+        WHEN DATEPART(year, lt2.first_term) BETWEEN 1801 AND 1900 THEN 19
+				WHEN DATEPART(year, lt2.first_term) BETWEEN 1901 AND 2000 THEN 20
+				WHEN DATEPART(year, lt2.first_term) BETWEEN 2001 AND 2100 THEN 21
+			END AS [first_century],
+
+			COALESCE(DATEDIFF(year, lt2.first_term, y.year_date), 0) AS [period],
+			COUNT(DISTINCT lt2.id_bioguide) AS [cohort_retained]
+
+		FROM
+			(
+				-- Tabela z id danego polityka i jego dat¹ rozpoczêcia kadencji
+				SELECT
+					lt.id_bioguide,
+					MIN(lt.term_start) AS [first_term]
+				FROM
+					legislators_terms lt
+				GROUP BY
+					lt.id_bioguide
+			) lt2
+
+			INNER JOIN legislators_terms lt3
+				ON lt2.id_bioguide = lt3.id_bioguide
+
+			LEFT JOIN YearlyCalendar y
+				ON y.year_date BETWEEN lt3.term_start AND lt3.term_end
+
+			GROUP BY
+			CASE
+			  WHEN DATEPART(year, lt2.first_term) BETWEEN 1701 AND 1800 THEN 18
+        WHEN DATEPART(year, lt2.first_term) BETWEEN 1801 AND 1900 THEN 19
+				WHEN DATEPART(year, lt2.first_term) BETWEEN 1901 AND 2000 THEN 20
+				WHEN DATEPART(year, lt2.first_term) BETWEEN 2001 AND 2100 THEN 21
+			END,
+
+			COALESCE(DATEDIFF(year, lt2.first_term, y.year_date), 0)
+
+	) lt4
+
+ORDER BY
+	lt4.first_century,
+	lt4.period
+
+
+-- OUTPUT:
+--	first_century	period	cohort_size	cohort_retained	pct_retained
+--	18						0				368					368							1
+--	18						1				368					360							0.978260869565217
+--	18						2				368					242							0.657608695652174
+--	18						3				368					233							0.633152173913043
+--	18						4				368					149							0.404891304347826
+--	18						5				368					144							0.391304347826087
+--	18						6				368					99							0.269021739130435
+--	18						7				368					101							0.27445652173913
+--	18						8				368					73							0.198369565217391
+--	18						9				368					70							0.190217391304348
