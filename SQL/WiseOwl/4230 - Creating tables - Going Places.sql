@@ -2,6 +2,8 @@ USE WorldEvents
 GO
 
 
+IF object_id('Summary_Data','U') is not null DROP TABLE Summary_Data
+
 CREATE TABLE Summary_Data (
 	SummaryItem varchar(50)
 	, CountEvents int
@@ -55,5 +57,3 @@ GROUP BY
 
 
 SELECT * FROM	Summary_Data
-
-DROP TABLE Summary_Data
