@@ -9,22 +9,22 @@ GO
 
 --	1. Do testów z wynikami binarnymi potrzebujemy:
 --			wielkoœæ kohorty, iloœæ u¿ytkowników koñcz¹cych dany proces i ich udzia³ %
---SELECT
---	ea.variant
---	, COUNT(ea.user_id) AS [total_cohorted]
---	, COUNT(ga.user_id) AS [completions]
---	, CAST(COUNT(ga.user_id) AS float) / COUNT(ea.user_id) AS [pct_completed]
---FROM	
---	exp_assignment ea
+SELECT
+	ea.variant
+	, COUNT(ea.user_id) AS [total_cohorted]
+	, COUNT(ga.user_id) AS [completions]
+	, CAST(COUNT(ga.user_id) AS float) / COUNT(ea.user_id) AS [pct_completed]
+FROM	
+	exp_assignment ea
 
---	LEFT JOIN game_actions ga
---		ON ea.user_id = ga.user_id
---		AND ga.action = 'onboarding complete'
+	LEFT JOIN game_actions ga
+		ON ea.user_id = ga.user_id
+		AND ga.action = 'onboarding complete'
 
---WHERE
---	ea.exp_name = 'Onboarding'
---GROUP BY
---	ea.variant
+WHERE
+	ea.exp_name = 'Onboarding'
+GROUP BY
+	ea.variant
 
 
 --	OUTPUT:
@@ -45,35 +45,35 @@ GO
 --	1. W tym przyk³adzie badamy czy proces wprowadzania wp³ywa na wydatki u¿ytkowników
 --			W przypadku testów t wymagane jest podanie trzech wartoœci wejœciowych:
 --			œredniej, odchylenia standardowego, liczby obserwacji	
---SELECT
---	a.variant
---	, COUNT(a.user_id) AS [total_cohorted]
---	, AVG(a.amount) AS [mean_amount]
---	, STDEV(a.amount) AS [stdev_amount]
---FROM
---	(
---		-- Rozbicie wszystkich u¿ytkowników, którzy ukoñczyli 'Onboarding' na dwa warianty
---		SELECT
---			ea.variant
---			, ea.user_id
+SELECT
+	a.variant
+	, COUNT(a.user_id) AS [total_cohorted]
+	, AVG(a.amount) AS [mean_amount]
+	, STDEV(a.amount) AS [stdev_amount]
+FROM
+	(
+		-- Rozbicie wszystkich u¿ytkowników, którzy ukoñczyli 'Onboarding' na dwa warianty
+		SELECT
+			ea.variant
+			, ea.user_id
 
---			-- suma wydanych pieniêdzy (jeœli u¿ytkownik nie zrobi³ ¿adnego zakupu, to zamieniamy NULL na 0)
---			, SUM(COALESCE(gp.amount, 0)) AS [amount]
+			-- suma wydanych pieniêdzy (jeœli u¿ytkownik nie zrobi³ ¿adnego zakupu, to zamieniamy NULL na 0)
+			, SUM(COALESCE(gp.amount, 0)) AS [amount]
 
---		FROM
---			exp_assignment ea
+		FROM
+			exp_assignment ea
 
---			LEFT JOIN game_purchases gp
---				ON ea.user_id = gp.user_id
+			LEFT JOIN game_purchases gp
+				ON ea.user_id = gp.user_id
 
---		WHERE
---			ea.exp_name = 'Onboarding'
---		GROUP BY
---			ea.variant
---			, ea.user_id
---	) a
---GROUP BY
---	a.variant
+		WHERE
+			ea.exp_name = 'Onboarding'
+		GROUP BY
+			ea.variant
+			, ea.user_id
+	) a
+GROUP BY
+	a.variant
 
 
 --	OUTPUT:
@@ -85,40 +85,40 @@ GO
 
 
 --	2. W tym przyk³adzie rozszerzamy poprzednie zapytanie i badamy grupê, która ukoñczy³a proces wprowadzania
---SELECT
---	a.variant
---	, COUNT(a.user_id) AS [total_cohorted]
---	, AVG(a.amount) AS [mean_amount]
---	, STDEV(a.amount) AS [stdev_amount]
---FROM
---	(
---		-- Rozbicie wszystkich u¿ytkowników, którzy ukoñczyli 'Onboarding' na dwa warianty
---		SELECT
---			ea.variant
---			, ea.user_id
+SELECT
+	a.variant
+	, COUNT(a.user_id) AS [total_cohorted]
+	, AVG(a.amount) AS [mean_amount]
+	, STDEV(a.amount) AS [stdev_amount]
+FROM
+	(
+		-- Rozbicie wszystkich u¿ytkowników, którzy ukoñczyli 'Onboarding' na dwa warianty
+		SELECT
+			ea.variant
+			, ea.user_id
 
---			-- suma wydanych pieniêdzy (jeœli u¿ytkownik nie zrobi³ ¿adnego zakupu, to zamieniamy NULL na 0)
---			, SUM(COALESCE(gp.amount, 0)) AS [amount]
+			-- suma wydanych pieniêdzy (jeœli u¿ytkownik nie zrobi³ ¿adnego zakupu, to zamieniamy NULL na 0)
+			, SUM(COALESCE(gp.amount, 0)) AS [amount]
 
---		FROM
---			exp_assignment ea
+		FROM
+			exp_assignment ea
 
---			LEFT JOIN game_purchases gp
---				ON ea.user_id = gp.user_id
+			LEFT JOIN game_purchases gp
+				ON ea.user_id = gp.user_id
 
---			INNER JOIN game_actions ga
---				ON ea.user_id = ga.user_id
---				-- warunek ukoñczenia procesu wprowadzania
---				AND ga.action = 'onboarding complete'	
+			INNER JOIN game_actions ga
+				ON ea.user_id = ga.user_id
+				-- warunek ukoñczenia procesu wprowadzania
+				AND ga.action = 'onboarding complete'	
 
---		WHERE
---			ea.exp_name = 'Onboarding'
---		GROUP BY
---			ea.variant
---			, ea.user_id
---	) a
---GROUP BY
---	a.variant
+		WHERE
+			ea.exp_name = 'Onboarding'
+		GROUP BY
+			ea.variant
+			, ea.user_id
+	) a
+GROUP BY
+	a.variant
 
 
 --	OUTPUT:
@@ -142,26 +142,26 @@ GO
 
 --	1. Jednym ze sposobów radzenia sobie z wartoœciami odstaj¹cymi ci¹g³ej miary sukcesu jest
 --			przekszta³cenie pierwotnej miary na wyniki binarne
---SELECT
---	ea.variant
---	,	COUNT(DISTINCT ea.user_id) AS [total_cohorted]
---	, COUNT(DISTINCT gp.user_id) AS [purchasers]
---	, CAST(COUNT(DISTINCT gp.user_id) AS float)
---		/ COUNT(DISTINCT ea.user_id) AS [pct_purchased]
---FROM 
---	exp_assignment ea
+SELECT
+	ea.variant
+	,	COUNT(DISTINCT ea.user_id) AS [total_cohorted]
+	, COUNT(DISTINCT gp.user_id) AS [purchasers]
+	, CAST(COUNT(DISTINCT gp.user_id) AS float)
+		/ COUNT(DISTINCT ea.user_id) AS [pct_purchased]
+FROM 
+	exp_assignment ea
 
---	LEFT JOIN game_purchases gp
---		ON ea.user_id = gp.user_id
+	LEFT JOIN game_purchases gp
+		ON ea.user_id = gp.user_id
 
---	INNER JOIN game_actions ga
---		ON ea.user_id = ga.user_id
---		AND ga.action = 'onboarding complete'
+	INNER JOIN game_actions ga
+		ON ea.user_id = ga.user_id
+		AND ga.action = 'onboarding complete'
 
---WHERE
---	ea.exp_name = 'Onboarding'
---GROUP BY
---	ea.variant
+WHERE
+	ea.exp_name = 'Onboarding'
+GROUP BY
+	ea.variant
 
 
 --	OUTPUT:
@@ -184,34 +184,34 @@ GO
 
 
 --	1. Wykorzystanie dodatkowej klauzuli ON, aby uwzglêdniæ tylko zakupy zrobione w przedziale 7 dni
---SELECT
---	a.variant
---	, COUNT(a.user_id) AS [total_cohorted]
---	, AVG(a.amount) AS [mean_amount]
---	, STDEV(a.amount) AS [stdev_amount]
---FROM
---	(
---		-- Tabela z u¿ytkownikami i iloœci¹ wydanych pieniêdzy przez nich (rozbicie na warianty i filtr 'Onboarding')
---		SELECT
---			ea.variant
---			, ea.user_id
---			, SUM(COALESCE(gp.amount, 0)) AS [amount]
---		FROM
---			exp_assignment ea
+SELECT
+	a.variant
+	, COUNT(a.user_id) AS [total_cohorted]
+	, AVG(a.amount) AS [mean_amount]
+	, STDEV(a.amount) AS [stdev_amount]
+FROM
+	(
+		-- Tabela z u¿ytkownikami i iloœci¹ wydanych pieniêdzy przez nich (rozbicie na warianty i filtr 'Onboarding')
+		SELECT
+			ea.variant
+			, ea.user_id
+			, SUM(COALESCE(gp.amount, 0)) AS [amount]
+		FROM
+			exp_assignment ea
 
---			LEFT JOIN game_purchases gp
---				ON ea.user_id = gp.user_id
---				-- warunek 7 dni od dokonania zakupu
---				AND gp.purch_date <= DATEADD(day, 7, ea.exp_date)
+			LEFT JOIN game_purchases gp
+				ON ea.user_id = gp.user_id
+				-- warunek 7 dni od dokonania zakupu
+				AND gp.purch_date <= DATEADD(day, 7, ea.exp_date)
 
---		WHERE
---			ea.exp_name = 'Onboarding'
---		GROUP BY
---			ea.variant
---			, ea.user_id
---	) a
---GROUP BY
---	a.variant
+		WHERE
+			ea.exp_name = 'Onboarding'
+		GROUP BY
+			ea.variant
+			, ea.user_id
+	) a
+GROUP BY
+	a.variant
 
 
 --	OUTPUT:
@@ -230,39 +230,39 @@ GO
 
 
 --	1. Przydzia³ do grup odbywa siê za pomoc¹ instrukcji CASE i przydzielamy etykiety "pre" i "post"
---SELECT
+SELECT
 
---	CASE
---		WHEN gu.created BETWEEN '2020-01-13' AND '2020-01-26'
---			THEN 'pre'
---		WHEN gu.created BETWEEN '2020-01-27' AND '2020-02-09'
---			THEN 'post'
---	END AS [variant]
+	CASE
+		WHEN gu.created BETWEEN '2020-01-13' AND '2020-01-26'
+			THEN 'pre'
+		WHEN gu.created BETWEEN '2020-01-27' AND '2020-02-09'
+			THEN 'post'
+	END AS [variant]
 
---	, COUNT(DISTINCT gu.user_id) AS [cohorted]
---	, COUNT(DISTINCT ga.user_id) AS [opted_in]
---	, CAST(COUNT(DISTINCT ga.user_id) AS float)
---		/ COUNT(DISTINCT gu.user_id) AS [pct_optin]
+	, COUNT(DISTINCT gu.user_id) AS [cohorted]
+	, COUNT(DISTINCT ga.user_id) AS [opted_in]
+	, CAST(COUNT(DISTINCT ga.user_id) AS float)
+		/ COUNT(DISTINCT gu.user_id) AS [pct_optin]
 
---	-- dobrym nawykiem jest dodanie liczby dni dla ka¿dej z grup, aby mieæ pewnoœæ, ¿e kod jest poprawny
---	, COUNT(DISTINCT gu.created) AS [days]
+	-- dobrym nawykiem jest dodanie liczby dni dla ka¿dej z grup, aby mieæ pewnoœæ, ¿e kod jest poprawny
+	, COUNT(DISTINCT gu.created) AS [days]
 
---FROM
---	game_users gu
+FROM
+	game_users gu
 
---	LEFT JOIN game_actions ga
---		ON gu.user_id = ga.user_id
---		AND ga.action = 'email_optin'
+	LEFT JOIN game_actions ga
+		ON gu.user_id = ga.user_id
+		AND ga.action = 'email_optin'
 
---WHERE
---	gu.created BETWEEN '2020-01-13' AND '2020-02-09'
---GROUP BY
---	CASE
---		WHEN gu.created BETWEEN '2020-01-13' AND '2020-01-26'
---			THEN 'pre'
---		WHEN gu.created BETWEEN '2020-01-27' AND '2020-02-09'
---			THEN 'post'
---	END
+WHERE
+	gu.created BETWEEN '2020-01-13' AND '2020-02-09'
+GROUP BY
+	CASE
+		WHEN gu.created BETWEEN '2020-01-13' AND '2020-01-26'
+			THEN 'pre'
+		WHEN gu.created BETWEEN '2020-01-27' AND '2020-02-09'
+			THEN 'post'
+	END
 
 
 --	OUTPUT:
