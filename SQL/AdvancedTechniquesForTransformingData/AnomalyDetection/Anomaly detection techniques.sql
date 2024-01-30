@@ -8,21 +8,21 @@ GO
 
 --	1. Znajdowanie za pomoc¹ sortowania mo¿e byæ przydatne, 
 --			ale czasami bez wiedzy specjalistycznej okazuje siê niewystarczaj¹ce
---SELECT
---	e.place,
---	e.mag,
---	COUNT(*) AS [count]
---FROM 
---	earthquakes e
---WHERE
---	e.mag IS NOT NULL
---	AND e.place = 'Northern California'
---GROUP BY
---	e.place,
---	e.mag
---ORDER BY
---	e.place,
---	e.mag DESC
+SELECT
+	e.place,
+	e.mag,
+	COUNT(*) AS [count]
+FROM 
+	earthquakes e
+WHERE
+	e.mag IS NOT NULL
+	AND e.place = 'Northern California'
+GROUP BY
+	e.place,
+	e.mag
+ORDER BY
+	e.place,
+	e.mag DESC
 
 
 	--	OUTPUT:
@@ -43,36 +43,36 @@ GO
 
 
 --	1. Wykorzystanie funkcji PERCENT_RANK() do zwrócenia percentyli
---SELECT
---	e2.place
---	, e2.mag
---	, e2.percentile
---	, COUNT(*) AS [count]
---FROM
---	(
---		SELECT
---			e.place
---			, e.mag
+SELECT
+	e2.place
+	, e2.mag
+	, e2.percentile
+	, COUNT(*) AS [count]
+FROM
+	(
+		SELECT
+			e.place
+			, e.mag
 
---			-- funkcja PERCENT_RANK() zwraca percentyl dla ka¿dego wiersza grupy
---			, PERCENT_RANK() OVER (
---				PARTITION BY e.place
---				ORDER BY e.mag
---			) AS [percentile]
+			-- funkcja PERCENT_RANK() zwraca percentyl dla ka¿dego wiersza grupy
+			, PERCENT_RANK() OVER (
+				PARTITION BY e.place
+				ORDER BY e.mag
+			) AS [percentile]
 
---		FROM
---			earthquakes e
---		WHERE
---			e.mag IS NOT NULL
---			AND e.place = 'Northern California'
---	) e2
---GROUP BY
---	e2.place
---	, e2.mag
---	, e2.percentile
---ORDER BY
---	e2.place
---	, e2.mag DESC
+		FROM
+			earthquakes e
+		WHERE
+			e.mag IS NOT NULL
+			AND e.place = 'Northern California'
+	) e2
+GROUP BY
+	e2.place
+	, e2.mag
+	, e2.percentile
+ORDER BY
+	e2.place
+	, e2.mag DESC
 
 
 	--	OUTPUT:
@@ -86,36 +86,36 @@ GO
 
 
 --	2. Wykorzystanie funkcji NTILE(100) do zwrócenia percentyli
---SELECT
---	e2.place
---	, e2.ntile
---	, MAX(e2.mag) AS [maximum]
---	, MIN(e2.mag) AS [minimum]
---FROM
---	(
---		SELECT
---			e.place
---			, e.mag
+SELECT
+	e2.place
+	, e2.ntile
+	, MAX(e2.mag) AS [maximum]
+	, MIN(e2.mag) AS [minimum]
+FROM
+	(
+		SELECT
+			e.place
+			, e.mag
 
---			-- funkcja NTILE() dzieli zbiór danych na okreœlon¹ liczbê przedzia³ów 
---			--	i okreœla do którego przedzia³u nale¿y dany wiersz
---			, NTILE(4) OVER (
---				PARTITION BY e.place
---				ORDER BY e.mag
---			) AS [ntile]
+			-- funkcja NTILE() dzieli zbiór danych na okreœlon¹ liczbê przedzia³ów 
+			--	i okreœla do którego przedzia³u nale¿y dany wiersz
+			, NTILE(4) OVER (
+				PARTITION BY e.place
+				ORDER BY e.mag
+			) AS [ntile]
 
---		FROM
---			earthquakes e
---		WHERE
---			e.mag IS NOT NULL
---			AND e.place = 'Central Alaska'
---	) e2
---GROUP BY
---	e2.place
---	, e2.ntile
---ORDER BY
---	e2.place
---	, e2.ntile DESC
+		FROM
+			earthquakes e
+		WHERE
+			e.mag IS NOT NULL
+			AND e.place = 'Central Alaska'
+	) e2
+GROUP BY
+	e2.place
+	, e2.ntile
+ORDER BY
+	e2.place
+	, e2.ntile DESC
 
 
 --		OUTPUT:
@@ -129,67 +129,67 @@ GO
 --	3. Wykorzystanie funkcji PERCENTILE_CONT() do 
 --			wyznaczenia wartoœci odpowiadaj¹cym okreœlonym percentylom dla ca³ego zbioru
 --			Ta funkcja wymaga dodatkowo klauzuli WITHIN GROUP oraz standardowo OVER PARTITION BY
---SELECT
---	e2.place
---	, MAX(e2.pct_25_mag) AS [pct_25_mag]
---	, MAX(e2.pct_25_depth) AS [pct_25_depth]
---	, MAX(e2.pct_50_mag) AS [pct_50_mag]
---	, MAX(e2.pct_50_depth) AS [pct_50_depth]
---	, MAX(e2.pct_75_mag) AS [pct_75_mag]
---	, MAX(e2.pct_75_depth) AS [pct_75_depth]
---FROM
---	(
---	SELECT
---		e.place
+SELECT
+	e2.place
+	, MAX(e2.pct_25_mag) AS [pct_25_mag]
+	, MAX(e2.pct_25_depth) AS [pct_25_depth]
+	, MAX(e2.pct_50_mag) AS [pct_50_mag]
+	, MAX(e2.pct_50_depth) AS [pct_50_depth]
+	, MAX(e2.pct_75_mag) AS [pct_75_mag]
+	, MAX(e2.pct_75_depth) AS [pct_75_depth]
+FROM
+	(
+	SELECT
+		e.place
 
---		, PERCENTILE_CONT(0.25) WITHIN GROUP (
---			ORDER BY e.mag
---		) OVER (
---			PARTITION BY e.place
---		) AS [pct_25_mag]
+		, PERCENTILE_CONT(0.25) WITHIN GROUP (
+			ORDER BY e.mag
+		) OVER (
+			PARTITION BY e.place
+		) AS [pct_25_mag]
 
---		, PERCENTILE_CONT(0.25) WITHIN GROUP (
---			ORDER BY e.depth
---		) OVER (
---			PARTITION BY e.place
---		) AS [pct_25_depth]
+		, PERCENTILE_CONT(0.25) WITHIN GROUP (
+			ORDER BY e.depth
+		) OVER (
+			PARTITION BY e.place
+		) AS [pct_25_depth]
 
---		, PERCENTILE_CONT(0.50) WITHIN GROUP (
---			ORDER BY e.mag
---		) OVER (
---			PARTITION BY e.place
---		) AS [pct_50_mag]
+		, PERCENTILE_CONT(0.50) WITHIN GROUP (
+			ORDER BY e.mag
+		) OVER (
+			PARTITION BY e.place
+		) AS [pct_50_mag]
 
---		, PERCENTILE_CONT(0.50) WITHIN GROUP (
---			ORDER BY e.depth
---		) OVER (
---			PARTITION BY e.place
---		) AS [pct_50_depth]
+		, PERCENTILE_CONT(0.50) WITHIN GROUP (
+			ORDER BY e.depth
+		) OVER (
+			PARTITION BY e.place
+		) AS [pct_50_depth]
 
---		, PERCENTILE_CONT(0.75) WITHIN GROUP (
---			ORDER BY e.mag
---		) OVER (
---			PARTITION BY e.place
---		) AS [pct_75_mag]
+		, PERCENTILE_CONT(0.75) WITHIN GROUP (
+			ORDER BY e.mag
+		) OVER (
+			PARTITION BY e.place
+		) AS [pct_75_mag]
 
---		, PERCENTILE_CONT(0.75) WITHIN GROUP (
---			ORDER BY e.depth
---		) OVER (
---			PARTITION BY e.place
---		) AS [pct_75_depth]
+		, PERCENTILE_CONT(0.75) WITHIN GROUP (
+			ORDER BY e.depth
+		) OVER (
+			PARTITION BY e.place
+		) AS [pct_75_depth]
 
---	FROM
---		earthquakes e
---	WHERE
---		e.mag IS NOT NULL
---		AND e.place IN ('Central Alaska', 'Southern Alaska')
---	GROUP BY
---		e.place
---		, e.mag
---		, e.depth
---	) e2
---GROUP BY
---	e2.place
+	FROM
+		earthquakes e
+	WHERE
+		e.mag IS NOT NULL
+		AND e.place IN ('Central Alaska', 'Southern Alaska')
+	GROUP BY
+		e.place
+		, e.mag
+		, e.depth
+	) e2
+GROUP BY
+	e2.place
 
 
 --		OUTPUT:
@@ -200,30 +200,30 @@ GO
 
 --	4. Wykorzystanie funkcji STDEV() (odchylenie standardowe) do okreœlenia anomalii
 --			oraz obliczanie wskaŸnika z-score (odchylenie standardowe od œredniej dla wartoœci ze zbioru danych)
---SELECT
---	e2.place
---	, e2.mag
---	, e3.avg_mag
---	, e3.std_dev
---	, (e2.mag - e3.std_dev) / e3.std_dev AS [z_score]
---FROM
---	earthquakes e2
+SELECT
+	e2.place
+	, e2.mag
+	, e3.avg_mag
+	, e3.std_dev
+	, (e2.mag - e3.std_dev) / e3.std_dev AS [z_score]
+FROM
+	earthquakes e2
 
---	INNER JOIN (
---		SELECT
---			AVG(e.mag) AS [avg_mag]
---			, STDEV(e.mag) AS [std_dev]
---		FROM	
---			earthquakes e
---		WHERE
---			e.mag IS NOT NULL
---	) e3
---		ON 1 = 1
+	INNER JOIN (
+		SELECT
+			AVG(e.mag) AS [avg_mag]
+			, STDEV(e.mag) AS [std_dev]
+		FROM	
+			earthquakes e
+		WHERE
+			e.mag IS NOT NULL
+	) e3
+		ON 1 = 1
 
---WHERE
---	e2.mag IS NOT NULL
---ORDER BY
---	e2.mag DESC
+WHERE
+	e2.mag IS NOT NULL
+ORDER BY
+	e2.mag DESC
 
 
 --		OUTPUT:
