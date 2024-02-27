@@ -81,17 +81,6 @@ GROUP BY
   device_category;
 
 
--- Conversion Rate
--- Calculation: Number of purchases divided by the number of sessions.
-SELECT
-  countif(event_name = 'purchase') / count(distinct ep.value.int_value) as conversion_rate
-FROM 
-  `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-  , unnest(event_params) as ep
-WHERE
-  ep.key = 'ga_session_id';
-
-
 -- Top Selling Products by Revenue
 -- Calculation: Products ranked by purchase revenue.
 SELECT 
@@ -135,6 +124,17 @@ WHERE
   event_name = 'purchase';
 
 
+-- Conversion Rate
+-- Calculation: Number of purchases divided by the number of sessions.
+SELECT
+  countif(event_name = 'purchase') / count(distinct ep.value.int_value) as conversion_rate
+FROM 
+  `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  , unnest(event_params) as ep
+WHERE
+  ep.key = 'ga_session_id';
+
+
 -- Conversion Rate by Traffic Source
 -- Calculation: Conversion rate grouped by traffic source.
 SELECT
@@ -176,10 +176,6 @@ FROM
   conversion_funnel;
 
 
-
--- -----[   Metrics for Customer Behavior Analysis   ]-----
-
-
 -- Average Session Duration
 -- Calculation: Average duration of sessions.
 WITH event_duration as (
@@ -199,16 +195,16 @@ WITH event_duration as (
 , session_duration as (
   SELECT
     ga_session_id
-    , sum(engagement_time_msec) / 1000 session_duration_seconds
+    , sum(engagement_time_msec) / 1000 as session_duration_seconds
   FROM
     event_duration
   GROUP BY
     ga_session_id
 )
 SELECT
-  round(avg(session_duration_seconds)) avg_session_duration_seconds
+  round(avg(session_duration_seconds)) as avg_session_duration_seconds
 FROM
-  session_duration
+  session_duration;
 
 
 -- Pages Per Session
@@ -229,7 +225,7 @@ WITH session_page_viewed as (
 SELECT
   round(avg(page_viewed)) as avg_pages_per_session
 FROM
-  session_page_viewed
+  session_page_viewed;
 
 
 -- Bounce Rate
@@ -265,7 +261,7 @@ FROM
 
 
 -- Top Viewed Pages
--- Calculation: Most frequently visited pages.
+-- Calculation: Most frequently visited landing pages.
 SELECT
   ep.value.string_value as page_title
   , count(*) as page_visits
@@ -287,9 +283,9 @@ LIMIT
 -- Calculation: Percentage of users who return to the platform over time.
 WITH user_activity as (
   SELECT
-    user_pseudo_id,
-    min(parse_date('%Y%m%d', event_date)) as first_activity_date,
-    max(parse_date('%Y%m%d', event_date)) as last_activity_date
+    user_pseudo_id
+    , min(parse_date('%Y%m%d', event_date)) as first_activity_date
+    , max(parse_date('%Y%m%d', event_date)) as last_activity_date
   FROM
     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
   GROUP BY
@@ -375,8 +371,362 @@ ORDER BY
 
 -- Total Sales by Product
 -- Calculation: Count of distinct transactions per product.
+SELECT
+  items.item_id as product_id
+  , items.item_name as product_name
+  , count(distinct ecommerce.transaction_id) as total_sales
+FROM
+  `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  , unnest(items) as items
+WHERE
+  event_name = 'purchase'
+GROUP BY
+  product_id
+  , product_name;
 
 
 
+-- -----[   Metrics for Customer Retention Analysis   ]-----
 
 
+-- User Retention Rate Over Time
+-- Calculation: Percentage of users who return to the platform over time.
+WITH user_activity as (
+  SELECT
+    user_pseudo_id
+    , min(parse_date('%Y%m%d', event_date)) as first_activity_date
+    , max(parse_date('%Y%m%d', event_date)) as last_activity_date
+  FROM
+    `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  GROUP BY
+    user_pseudo_id
+)
+SELECT
+  last_activity_date as date
+  , countif(date_diff(last_activity_date, first_activity_date, day) >= 7)
+  / count(distinct user_pseudo_id) * 100 as user_retention_rate
+FROM
+  user_activity
+GROUP BY
+  date
+ORDER BY
+  date;
+
+
+-- Churn Rate
+-- Calculation: Percentage of users who haven't engaged with the platform for a defined period (current_date() as 2021-01-31)
+WITH last_activity as (
+  SELECT
+    user_pseudo_id
+    , max(parse_date('%Y%m%d', event_date)) as last_activity_date
+  FROM
+    `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  GROUP BY
+    user_pseudo_id
+)
+SELECT
+  countif(date_diff(parse_date('%Y%m%d', '20210131'), last_activity_date, day) >= 30)
+  / count(distinct user_pseudo_id) * 100 as churn_rate
+FROM
+  last_activity;
+
+
+-- Repeat Purchase Rate
+-- Calculation: Percentage of users who have made more than one purchase.
+WITH purchase_counts as (
+  SELECT
+    user_pseudo_id
+    , count(distinct ecommerce.transaction_id) as purchase_count
+  FROM
+    `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  WHERE
+    event_name = 'purchase'
+  GROUP BY
+    user_pseudo_id
+)
+SELECT
+  countif(purchase_count > 1)
+  / count(distinct user_pseudo_id) * 100 as repeat_purchase_rate
+FROM
+  purchase_counts;
+
+
+
+-- -----[   Metrics for Geographical Analysis   ]-----
+
+
+-- Total Sessions by Geo
+-- Calculation: Count of sessions grouped by geo.
+SELECT
+  geo.continent
+  , geo.sub_continent
+  , geo.country
+  , geo.region
+  , geo.city
+  , count(distinct ep.value.int_value) as sessions_count
+FROM 
+  `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  , unnest(event_params) as ep
+WHERE
+  ep.key = 'ga_session_id'
+GROUP BY
+  geo.continent
+  , geo.sub_continent
+  , geo.country
+  , geo.region
+  , geo.city;
+
+
+-- Total Revenue by Geo
+-- Calculation: Sum of revenue generated by users from each geo.
+SELECT
+  geo.continent
+  , geo.sub_continent
+  , geo.country
+  , geo.region
+  , geo.city
+  , sum(ecommerce.purchase_revenue_in_usd) as total_revenue
+FROM 
+  `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  , unnest(event_params) as ep
+WHERE
+  event_name = 'purchase'
+GROUP BY
+  geo.continent
+  , geo.sub_continent
+  , geo.country
+  , geo.region
+  , geo.city;
+
+
+-- Session Duration by Geo
+-- Calculation: Duration of sessions by geo.
+WITH event_duration as (
+  SELECT
+    concat(user_pseudo_id, cast(event_timestamp as string)) user_id_event_timestamp
+    , geo.continent
+    , geo.sub_continent
+    , geo.country
+    , geo.region
+    , geo.city
+    , max(if(ep.key = 'ga_session_id', ep.value.int_value, null)) as ga_session_id
+    , sum(if(ep.key = 'engagement_time_msec', ep.value.int_value, null)) as engagement_time_msec
+  FROM 
+    `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+    , unnest(event_params) as ep
+  WHERE
+    ep.key = 'ga_session_id' 
+    or ep.key = 'engagement_time_msec'
+  GROUP BY
+    user_id_event_timestamp
+    , geo.continent
+    , geo.sub_continent
+    , geo.country
+    , geo.region
+    , geo.city
+)
+, session_duration as (
+  SELECT
+    ga_session_id
+    , continent
+    , sub_continent
+    , country
+    , region
+    , city
+    , sum(engagement_time_msec) / 1000 as session_duration_seconds
+  FROM
+    event_duration
+  GROUP BY
+    ga_session_id
+    , continent
+    , sub_continent
+    , country
+    , region
+    , city
+)
+SELECT
+  ga_session_id
+  , continent
+  , sub_continent
+  , country
+  , region
+  , city
+  , session_duration_seconds
+FROM
+  session_duration;
+
+
+-- New vs. Returning Visitors by Geo
+-- Calculation: Count of new and returning visitors grouped by geo.
+WITH user_visit_count as (
+  SELECT
+    user_pseudo_id
+    , geo.continent
+    , geo.sub_continent
+    , geo.country
+    , geo.region
+    , geo.city
+    , count(distinct ep.value.int_value) as visit_count
+    , case
+      when count(distinct ep.value.int_value) = 1 then 'New Visitor'
+      else 'Returning Visitor'
+    end as visitor_type
+  FROM 
+    `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+    , unnest(event_params) as ep
+  WHERE
+    ep.key = 'ga_session_id'
+    and event_name = 'first_visit'
+  GROUP BY
+    user_pseudo_id
+    , geo.continent
+    , geo.sub_continent
+    , geo.country
+    , geo.region
+    , geo.city
+)
+SELECT
+  uvc.visitor_type
+  , uvc.continent
+  , uvc.sub_continent
+  , uvc.country
+  , uvc.region
+  , uvc.city
+  , count(*) as visitor_count
+FROM
+  user_visit_count as uvc
+GROUP BY
+  uvc.visitor_type
+  , uvc.continent
+  , uvc.sub_continent
+  , uvc.country
+  , uvc.region
+  , uvc.city;
+
+
+-- Conversion Rate by Country
+-- Calculation: Percentage of sessions that resulted in a conversion, grouped by country.
+SELECT
+  geo.continent
+  , geo.sub_continent
+  , geo.country
+  , geo.region
+  , geo.city
+  , countif(event_name = 'purchase') as purchase_count
+  , count(distinct ep.value.int_value) as session_count
+  , countif(event_name = 'purchase') / count(distinct ep.value.int_value) as conversion_rate
+FROM 
+  `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  , unnest(event_params) as ep
+WHERE
+  ep.key = 'ga_session_id'
+GROUP BY
+  geo.continent
+  , geo.sub_continent
+  , geo.country
+  , geo.region
+  , geo.city;
+
+
+
+-- -----[   Metrics for Device and Platform Analysis   ]-----
+
+
+-- Total Sessions by Device Category
+-- Calculation: Count of sessions grouped by device category.
+SELECT
+  device.category as device_category
+  , count(distinct ep.value.int_value) as sessions_count
+FROM 
+  `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  , unnest(event_params) as ep
+WHERE
+  ep.key = 'ga_session_id'
+GROUP BY
+  device_category;
+
+
+-- Session Duration by Device Category
+-- Calculation: Duration of sessions by device category.
+WITH event_duration as (
+  SELECT
+    concat(user_pseudo_id, cast(event_timestamp as string)) user_id_event_timestamp
+    , device.category as device_category
+    , max(if(ep.key = 'ga_session_id', ep.value.int_value, null)) as ga_session_id
+    , sum(if(ep.key = 'engagement_time_msec', ep.value.int_value, null)) as engagement_time_msec
+  FROM 
+    `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+    , unnest(event_params) as ep
+  WHERE
+    ep.key = 'ga_session_id' 
+    or ep.key = 'engagement_time_msec'
+  GROUP BY
+    user_id_event_timestamp
+    , device_category
+)
+, session_duration as (
+  SELECT
+    ga_session_id
+    , device_category
+    , sum(engagement_time_msec) / 1000 as session_duration_seconds
+  FROM
+    event_duration
+  GROUP BY
+    ga_session_id
+    , device_category
+)
+SELECT
+  device_category
+  , avg(session_duration_seconds) as avg_session_duration_seconds
+FROM
+  session_duration
+GROUP BY
+  device_category;
+
+
+-- New vs. Returning Visitors by Device Category
+-- Calculation: Count of new and returning visitors grouped by device category.
+WITH user_visit_count as (
+  SELECT
+    user_pseudo_id
+    , device.category as device_category
+    , count(distinct ep.value.int_value) as visit_count
+    , case
+      when count(distinct ep.value.int_value) = 1 then 'New Visitor'
+      else 'Returning Visitor'
+    end as visitor_type
+  FROM 
+    `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+    , unnest(event_params) as ep
+  WHERE
+    ep.key = 'ga_session_id'
+    and event_name = 'first_visit'
+  GROUP BY
+    user_pseudo_id
+    , device_category
+)
+SELECT
+  uvc.visitor_type
+  , uvc.device_category
+  , count(*) as visitor_count
+FROM
+  user_visit_count as uvc
+GROUP BY
+  uvc.visitor_type
+  , uvc.device_category;
+
+
+-- Conversion Rate by Device Category
+-- Calculation: Percentage of sessions that resulted in a conversion, grouped by device category.
+SELECT
+  device.category as device_category
+  , countif(event_name = 'purchase') as purchase_count
+  , count(distinct ep.value.int_value) as session_count
+  , countif(event_name = 'purchase') / count(distinct ep.value.int_value) as conversion_rate
+FROM 
+  `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  , unnest(event_params) as ep
+WHERE
+  ep.key = 'ga_session_id'
+GROUP BY
+  device_category;
