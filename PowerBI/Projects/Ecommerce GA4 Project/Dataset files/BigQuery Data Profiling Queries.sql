@@ -180,7 +180,7 @@ FROM
 -- Calculation: Average duration of sessions.
 WITH event_duration as (
   SELECT
-    concat(user_pseudo_id, cast(event_timestamp as string)) user_id_event_timestamp
+    concat(user_pseudo_id, cast(event_timestamp as string)) as user_id_event_timestamp
     , max(if(ep.key = 'ga_session_id', ep.value.int_value, null)) as ga_session_id
     , sum(if(ep.key = 'engagement_time_msec', ep.value.int_value, null)) as engagement_time_msec
   FROM 
@@ -503,7 +503,7 @@ GROUP BY
 -- Calculation: Duration of sessions by geo.
 WITH event_duration as (
   SELECT
-    concat(user_pseudo_id, cast(event_timestamp as string)) user_id_event_timestamp
+    concat(user_pseudo_id, cast(event_timestamp as string)) as user_id_event_timestamp
     , geo.continent
     , geo.sub_continent
     , geo.country
@@ -650,7 +650,7 @@ GROUP BY
 -- Calculation: Duration of sessions by device category.
 WITH event_duration as (
   SELECT
-    concat(user_pseudo_id, cast(event_timestamp as string)) user_id_event_timestamp
+    concat(user_pseudo_id, cast(event_timestamp as string)) as user_id_event_timestamp
     , device.category as device_category
     , max(if(ep.key = 'ga_session_id', ep.value.int_value, null)) as ga_session_id
     , sum(if(ep.key = 'engagement_time_msec', ep.value.int_value, null)) as engagement_time_msec
