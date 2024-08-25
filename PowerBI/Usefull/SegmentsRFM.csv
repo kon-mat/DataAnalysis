@@ -1,0 +1,126 @@
+Index,Segment,Score,R,F,M
+1,Champions,555,5,5,5
+1,Champions,554,5,5,4
+1,Champions,544,5,4,4
+1,Champions,545,5,4,5
+1,Champions,454,4,5,4
+1,Champions,455,4,5,5
+1,Champions,445,4,4,5
+2,Loyal,543,5,4,3
+2,Loyal,444,4,4,4
+2,Loyal,435,4,3,5
+2,Loyal,355,3,5,5
+2,Loyal,354,3,5,4
+2,Loyal,345,3,4,5
+2,Loyal,344,3,4,4
+2,Loyal,335,3,3,5
+3,Potential Loyalist,553,5,5,3
+3,Potential Loyalist,551,5,5,1
+3,Potential Loyalist,552,5,5,2
+3,Potential Loyalist,541,5,4,1
+3,Potential Loyalist,542,5,4,2
+3,Potential Loyalist,533,5,3,3
+3,Potential Loyalist,532,5,3,2
+3,Potential Loyalist,531,5,3,1
+3,Potential Loyalist,452,4,5,2
+3,Potential Loyalist,451,4,5,1
+3,Potential Loyalist,442,4,4,2
+3,Potential Loyalist,441,4,4,1
+3,Potential Loyalist,431,4,3,1
+3,Potential Loyalist,453,4,5,3
+3,Potential Loyalist,433,4,3,3
+3,Potential Loyalist,432,4,3,2
+3,Potential Loyalist,423,4,2,3
+3,Potential Loyalist,353,3,5,3
+3,Potential Loyalist,352,3,5,2
+3,Potential Loyalist,351,3,5,1
+3,Potential Loyalist,342,3,4,2
+3,Potential Loyalist,341,3,4,1
+3,Potential Loyalist,333,3,3,3
+3,Potential Loyalist,323,3,2,3
+4,New Customers,512,5,1,2
+4,New Customers,511,5,1,1
+4,New Customers,422,4,2,2
+4,New Customers,421,4,2,1
+4,New Customers,412,4,1,2
+4,New Customers,411,4,1,1
+4,New Customers,311,3,1,1
+5,Promising,525,5,2,5
+5,Promising,524,5,2,4
+5,Promising,523,5,2,3
+5,Promising,522,5,2,2
+5,Promising,521,5,2,1
+5,Promising,515,5,1,5
+5,Promising,514,5,1,4
+5,Promising,513,5,1,3
+5,Promising,425,4,2,5
+5,Promising,424,4,2,4
+5,Promising,413,4,1,3
+5,Promising,414,4,1,4
+5,Promising,415,4,1,5
+5,Promising,315,3,1,5
+5,Promising,314,3,1,4
+5,Promising,313,3,1,3
+6,Need Attention,535,5,3,5
+6,Need Attention,534,5,3,4
+6,Need Attention,443,4,4,3
+6,Need Attention,434,4,3,4
+6,Need Attention,343,3,4,3
+6,Need Attention,334,3,3,4
+6,Need Attention,325,3,2,5
+6,Need Attention,324,3,2,4
+7,About To Sleep,331,3,3,1
+7,About To Sleep,321,3,2,1
+7,About To Sleep,312,3,1,2
+7,About To Sleep,221,2,2,1
+7,About To Sleep,213,2,1,3
+7,About To Sleep,231,2,3,1
+7,About To Sleep,241,2,4,1
+7,About To Sleep,251,2,5,1
+8,Cannot Lose Them But Losing,155,1,5,5
+8,Cannot Lose Them But Losing,154,1,5,4
+8,Cannot Lose Them But Losing,144,1,4,4
+8,Cannot Lose Them But Losing,214,2,1,4
+8,Cannot Lose Them But Losing,215,2,1,5
+8,Cannot Lose Them But Losing,115,1,1,5
+8,Cannot Lose Them But Losing,114,1,1,4
+8,Cannot Lose Them But Losing,113,1,1,3
+9,At Risk,255,2,5,5
+9,At Risk,254,2,5,4
+9,At Risk,245,2,4,5
+9,At Risk,244,2,4,4
+9,At Risk,253,2,5,3
+9,At Risk,252,2,5,2
+9,At Risk,243,2,4,3
+9,At Risk,242,2,4,2
+9,At Risk,235,2,3,5
+9,At Risk,234,2,3,4
+9,At Risk,225,2,2,5
+9,At Risk,224,2,2,4
+9,At Risk,153,1,5,3
+9,At Risk,152,1,5,2
+9,At Risk,145,1,4,5
+9,At Risk,143,1,4,3
+9,At Risk,142,1,4,2
+9,At Risk,135,1,3,5
+9,At Risk,134,1,3,4
+9,At Risk,133,1,3,3
+9,At Risk,125,1,2,5
+9,At Risk,124,1,2,4
+10,Hibernating Customers,332,3,3,2
+10,Hibernating Customers,322,3,2,2
+10,Hibernating Customers,233,2,3,3
+10,Hibernating Customers,232,2,3,2
+10,Hibernating Customers,223,2,2,3
+10,Hibernating Customers,222,2,2,2
+10,Hibernating Customers,132,1,3,2
+10,Hibernating Customers,123,1,2,3
+10,Hibernating Customers,122,1,2,2
+10,Hibernating Customers,212,2,1,2
+10,Hibernating Customers,211,2,1,1
+11,Lost Customers,111,1,1,1
+11,Lost Customers,112,1,1,2
+11,Lost Customers,121,1,2,1
+11,Lost Customers,131,1,3,1
+11,Lost Customers,141,1,4,1
+11,Lost Customers,151,1,5,1
